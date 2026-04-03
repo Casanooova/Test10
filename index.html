@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pocket Drive</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:black;
+  color:white;
+}
+
+.screen { display:none; height:100vh; }
+.active { display:flex; flex-direction:column; }
+
+.topBar {
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  font-weight:bold;
+}
+
+.menuBg {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+
+.menuContent {
+  position:relative;
+  z-index:2;
+}
+
+button {
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.packBtn { background:orange; }
+.codeBtn { background:purple; color:white; }
+
+.pullOverlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.card {
+  padding:20px;
+  border-radius:15px;
+  text-align:center;
+  font-size:18px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div id="menu" class="screen active">
+
+<img class="menuBg" src="./bg.png.PNG" onerror="this.style.display='none'">
+
+<div class="topBar">
+  <div>Pocket Drive</div>
+  <div id="coins">Coins: 100000</div>
+</div>
+
+<div class="menuContent">
+  <button class="packBtn" onclick="openPack()">Open Pack</button>
+  <button onclick="playGame()">Play Game</button>
+
+  <div>
+    <input id="codeInput" placeholder="Enter Code">
+    <button class="codeBtn" onclick="redeem()">Redeem</button>
+  </div>
+</div>
+
+</div>
+
+<!-- PACK RESULT -->
+<div id="pullOverlay" class="pullOverlay">
+  <div id="card" class="card"></div>
+  <button onclick="closePull()">Back</button>
+</div>
+
+<script>
+
+let coins = 100000;
+
+function updateCoins(){
+  document.getElementById("coins").textContent = "Coins: " + coins;
+}
+
+function rand(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function getRarityColor(ovr){
+  if(ovr>=99) return "#00ffff";
+  if(ovr>=95) return "#ff9900";
+  if(ovr>=90) return "#ff00ff";
+  if(ovr>=80) return "#0099ff";
+  if(ovr>=70) return "#00cc66";
+  return "#999";
+}
+
+function scaleStat(base, ovr){
+  const boost = Math.pow((ovr-60)/39,2.2);
+  return Math.min(99, Math.round(base + boost*45));
+}
+
+function generatePlayer(){
+  let ovr;
+
+  const roll = Math.random();
+
+  if(roll<0.01) ovr = 99;
+  else if(roll<0.05) ovr = rand(95,98);
+  else if(roll<0.15) ovr = rand(90,94);
+  else if(roll<0.4) ovr = rand(80,89);
+  else if(roll<0.75) ovr = rand(70,79);
+  else ovr = rand(60,69);
+
+  return {
+    name:"Player " + rand(1,999),
+    ovr
+  };
+}
+
+function openPack(){
+  if(coins < 500){
+    alert("Not enough coins");
+    return;
+  }
+
+  coins -= 500;
+  updateCoins();
+
+  const player = generatePlayer();
+
+  const card = document.getElementById("card");
+
+  const color = getRarityColor(player.ovr);
+
+  card.style.background = color;
+
+  card.style.boxShadow = `
+    0 0 20px ${color},
+    0 0 40px ${color},
+    0 0 60px ${color}
+  `;
+
+  card.innerHTML = `
+    <div>${player.name}</div>
+    <div>OVR ${player.ovr}</div>
+  `;
+
+  document.getElementById("pullOverlay").style.display="flex";
+}
+
+function closePull(){
+  document.getElementById("pullOverlay").style.display="none";
+}
+
+function redeem(){
+  const code = document.getElementById("codeInput").value.toUpperCase();
+
+  if(code==="TEST100K"){
+    coins+=100000;
+  }
+
+  if(code==="TEST100M"){
+    coins+=100000000;
+  }
+
+  updateCoins();
+}
+
+function playGame(){
+  alert("Game hook coming next (this will launch real gameplay)");
+}
+
+updateCoins();
+
+</script>
+
+</body>
+</html>
